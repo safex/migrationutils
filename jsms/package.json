@@ -1,0 +1,28 @@
+{
+  "name": "jsms",
+  "version": "0.1.0",
+  "description": "js script for extracting migration data",
+  "main": "src/index.js",
+  "scripts": {
+    "go": "node src/index.js"
+  },
+  "author": {
+    "name": "Safex Developers",
+    "url": "https://safex.io",
+    "email": "team@safex.io"
+  },
+  "maintainers": [
+  {
+    "name": "Daniel Dabek",
+    "url": "https://github.com/ddabek",
+    "email": "daniel@safex.io"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bitcoinjs-lib": "^4.0.1",
+    "fetch": "^1.1.0",
+    "node-fetch": "^2.2.0",
+    "safex-addressjs": "git+https://github.com/safex/safex_addressjs.git",
+    "sync-request": "^6.0.0"
+  }
+}
