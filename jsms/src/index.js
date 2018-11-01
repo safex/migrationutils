@@ -1,6 +1,13 @@
 
 var sa = require('safex-addressjs');
 var request = require('sync-request');
+import express from 'express';
+
+
+let router = express.Router();
+
+
+
 
 
 
@@ -52,17 +59,30 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
         let book = {};
         book.addresses = [];
 
+
+        let apibook = {};
+
+
         txns.txns.forEach((tx) => {
 
             let duplicate = false;
         let index = 0;
         for (var x = 0; x < book.addresses.length; x++) {
-            if (book.addresses[x].address == tx.vin[0].addr) {
+            if (book.addresses[x].address === tx.vin[0].addr) {
                 duplicate = true;
                 index = x;
             }
         }
-        if (duplicate == true) {
+
+        if (apibook[tx.vin[0].addr] === undefined) {
+            apibook[tx.vin[0].addr] = {};
+            apibook[tx.vin[0].addr].address = tx.vin[0].addr;
+        } else {
+            console.log("duplicate")
+        }
+
+
+        if (duplicate === true) {
 
             book.addresses[index].txns.push(tx);
         } else {
