@@ -12,11 +12,12 @@
     "email": "team@safex.io"
   },
   "maintainers": [
-  {
-    "name": "Daniel Dabek",
-    "url": "https://github.com/ddabek",
-    "email": "daniel@safex.io"
-  },
+    {
+      "name": "Daniel Dabek",
+      "url": "https://github.com/ddabek",
+      "email": "daniel@safex.io"
+    }
+  ],
   "license": "MIT",
   "dependencies": {
     "bitcoinjs-lib": "^4.0.1",

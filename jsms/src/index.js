@@ -2,6 +2,8 @@
 var sa = require('safex-addressjs');
 var request = require('sync-request');
 
+
+
 require('dns').resolve('bitcoin.safex.io', function (err) {
     if (err) {
         console.log("No connection");
@@ -126,29 +128,29 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
                 json: {txid: txn.txid},
             });
 
-            var resp_json = JSON.parse(resp.getBody());
+            try {
+                var resp_json = JSON.parse(resp.getBody());
 
-            if (resp_json.valid === true &&
-                resp_json.propertyid === 56 &&
-                resp_json.confirmations > 1 &&
-                resp_json.referenceaddress === burn_address) {
+                if (resp_json.valid === true &&
+                    resp_json.propertyid === 56 &&
+                    resp_json.confirmations > 1 &&
+                    resp_json.referenceaddress === burn_address) {
 
-                let burn_txn = {};
-                burn_txn.amount = resp_json.amount;
-                burn_txn.txid = resp_json.txid;
-                burn_txn.blockheight = resp_json.block;
-                book.addresses[account_key].burn_txns.push(burn_txn);
+                    let burn_txn = {};
+                    burn_txn.amount = resp_json.amount;
+                    burn_txn.txid = resp_json.txid;
+                    burn_txn.blockheight = resp_json.block;
+                    book.addresses[account_key].burn_txns.push(burn_txn);
 
-                book.addresses[account_key].migrated_balance += parseInt(resp_json.amount);
+                    book.addresses[account_key].migrated_balance += parseInt(resp_json.amount);
+                }
+            } catch (e) {
+                console.log("empty repsonse on txid (could be a zero amount safex txn): ")
+                console.log(txn.txid)
             }
-
-            //save to database this is an omni transaction
-            //check its associated address
-            //if it is then relate these data
-
+            //this will give you the balance of the migrated from this person
+            //all of this info we need to keep in memory
         }
-        //this will give you the balance of the migrated from this person
-        //all of this info we need to keep in memory
 
     })
 
@@ -313,6 +315,8 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
 
 
         console.log("how many different senders " + book.addresses.length)
+
+        console.log(book.addresses[0])
 
     }
 
