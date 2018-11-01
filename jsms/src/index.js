@@ -1,11 +1,24 @@
 
 var sa = require('safex-addressjs');
 var request = require('sync-request');
+import RateLimit from 'express-rate-limit';
 import express from 'express';
 
+var app = express();
+
+var ratelimit = new RateLimit({
+    windowMs: 60*60*1000*2, // 6 hour window
+    delayAfter: 40, // begin slowing down responses after the third request
+    delayMs: 3*1000, // slow down subsequent responses by 3 seconds per request
+    max: 100, // start blocking after 10 requests
+    message: "Too many accounts created from this IP, please try again after an hour"
+});
 
 let router = express.Router();
 
+
+
+let apibook = {};
 
 
 
@@ -48,7 +61,9 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
             var res = request('GET', 'http://bitcoin.safex.io:3001/insight-api/txs/?address=' + burn_address + '&pageNum=' + index);
             var page = JSON.parse(res.getBody());
             page.txs.forEach(tx => {
+                if(tx.confirmations > 0) {
                 txns.txns.push(tx);
+            }
         })
             index += 1;
         }
@@ -60,7 +75,6 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
         book.addresses = [];
 
 
-        let apibook = {};
 
 
         txns.txns.forEach((tx) => {
@@ -78,7 +92,7 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
             apibook[tx.vin[0].addr] = {};
             apibook[tx.vin[0].addr].address = tx.vin[0].addr;
         } else {
-            console.log("duplicate")
+
         }
 
 
@@ -250,16 +264,16 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
                 return a.blockheight1 - b.blockheight1;
         })
 
-            console.log(" [0] and other")
-
             console.log(account.safex_addresses)
 
 
+
+            //iterate over the burn transactions for the account
+            //check their highest lower blockheight address in the series of transactions
             account.burn_txns.forEach(burn => {
                 console.log(burn.blockheight)
 
-            if (account.safex_addresses.length === 1
-            ) {
+            if (account.safex_addresses.length === 1) {
                 book.addresses[account_key].safex_addresses[0].burns.push(burn);
                 book.addresses[account_key].safex_addresses[0].balance += parseInt(burn.amount);
                 console.log("one address balance " + book.addresses[account_key].safex_addresses[0].balance)
@@ -307,13 +321,18 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
         }
 
 
-        console.log("now its sorted")
+
+        apibook[account.address].safex_addresses = [];
 
 
-        console.log(account.migrated_balance)
-        console.log(account.address)
+
+
 
         for (var i = 0; i < book.addresses[account_key].safex_addresses.length; i++) {
+
+            var add_add = {};
+            add_add.safex_address = book.addresses[account_key].safex_addresses[i].address;
+            var amount = 0;
 
 
 
@@ -321,11 +340,14 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
 
                     console.log(book.addresses[account_key].safex_addresses[i].address)
                     console.log(book.addresses[account_key].safex_addresses[i].burns[j].txid)
-                    console.log(book.addresses[account_key].safex_addresses[i].burns[j].amount)
+                    amount += parseInt(book.addresses[account_key].safex_addresses[i].burns[j].amount);
 
 
             }
 
+            add_add.balance = amount;
+
+            apibook[account.address].safex_addresses.push(add_add);
             console.log(account.safex_addresses[i].balance);
 
         }
@@ -336,9 +358,44 @@ require('dns').resolve('bitcoin.safex.io', function (err) {
 
         console.log("how many different senders " + book.addresses.length)
 
-        console.log(book.addresses[0])
 
     }
 
 
+    Object.keys(apibook).map((key, index) => {
+        console.log(apibook[key].address)
+        if (apibook[key].safex_addresses.length > 0) {
+            for (var i = 0; i < apibook[key].safex_addresses.length; i++) {
+
+                console.log(apibook[key].safex_addresses[i].safex_address)
+                console.log(apibook[key].safex_addresses[i].balance)
+            }
+        }
+
+    });
+
+
+
+
+
 });
+
+
+router.post('/:account', ratelimit, (req, res) => {
+    const account = req.params.account;
+if (apibook[account] !== undefined) {
+    console.log("we found your account")
+    res.status(200).json(apibook[account])
+    //simply reply with the apibook info for this account
+} else {
+    //we couldnt find it sorry
+    console.log("no account found here")
+    res.status(400).json({error: "no account found by this address"})
+}
+
+});
+
+
+app.use('/api', router);
+
+app.listen(3010);
