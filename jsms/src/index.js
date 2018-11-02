@@ -24,6 +24,7 @@ let apibook = {};
 
 
 function getInfo() {
+
     require('dns').resolve('bitcoin.safex.io', function (err) {
         if (err) {
             console.log("No connection");
@@ -158,7 +159,7 @@ function getInfo() {
                 book.addresses[account_key].second_halves.push(second_half)
 
             } else if (out.scriptPubKey.hex.slice(0, 2) === "6a" && out.scriptPubKey.hex.slice(4, 12) === "6f6d6e69") {
-                var resp = request('POST', 'http://omni.safex.io:3002/validate_transaction', {
+                var resp = request('POST', 'http://localhost:3002/validate_transaction', {
                     json: {txid: txn.txid},
                 });
 
@@ -367,23 +368,25 @@ function getInfo() {
     });
 
 
-    router.post('/:account', ratelimit, (req, res) => {
 
-    const account = req.params.account;
-
-    if (apibook[account] !== undefined) {
-        console.log("we found your account")
-        res.status(200).json(apibook[account])
-        //simply reply with the apibook info for this account
-    } else {
-        //we couldnt find it sorry
-        console.log("no account found here")
-        res.status(400).json({error: "no account found by this address"})
-    }
-
-});
 
 }
+
+router.post('/:account', ratelimit, (req, res) => {
+
+const account = req.params.account;
+
+if (apibook[account] !== undefined) {
+    console.log("we found your account")
+    res.status(200).json(apibook[account])
+    //simply reply with the apibook info for this account
+} else {
+    //we couldnt find it sorry
+    console.log("no account found here")
+    res.status(400).json({error: "no account found by this address"})
+}
+
+});
 
 setInterval(getInfo, 300000);
 
