@@ -383,7 +383,7 @@ if (apibook[account] !== undefined) {
 } else {
     //we couldnt find it sorry
     console.log("no account found here")
-    res.status(400).json({error: "no account found by this address"})
+    res.status(200).json({error: "no account found by this address"})
 }
 
 });
