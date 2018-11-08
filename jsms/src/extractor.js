@@ -127,19 +127,20 @@ async function processAccount(account, apiBook) {
         account.second_halves.push(second_half);
         
       } else if (out.scriptPubKey.hex.slice(0, 2) === '6a' && out.scriptPubKey.hex.slice(4, 12) === '6f6d6e69') {
-        const resp = await request.post(safex_backend + '/validate_transaction', {
+        const resp_json = await request.post(safex_backend + '/validate_transaction', {
           json: true,
           body: {txid: txn.txid},
         });
         
-        try {
-          var resp_json = JSON.parse(resp.getBody());
-          
+        if (!resp_json) {
+          console.log('empty response on txid (could be a zero amount safex txn): ');
+          console.log(txn.txid);
+        } else {
           if (resp_json.valid === true &&
             resp_json.propertyid === 56 &&
             resp_json.confirmations > 1 &&
-            resp_json.referenceaddress === burn_address) {
-            
+            resp_json.referenceaddress === burn_address
+          ) {
             let burn_txn = {};
             burn_txn.amount = resp_json.amount;
             burn_txn.txid = resp_json.txid;
@@ -148,10 +149,6 @@ async function processAccount(account, apiBook) {
             
             account.migrated_balance += parseInt(resp_json.amount);
           }
-        }
-        catch (e) {
-          console.log('empty repsonse on txid (could be a zero amount safex txn): ');
-          console.log(txn.txid);
         }
         //this will give you the balance of the migrated from this person
         //all of this info we need to keep in memory

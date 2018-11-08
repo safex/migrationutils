@@ -8,7 +8,7 @@ function create() {
   
   child.on('message', ({id, result, error}) => {
     if (_promisesById && _promisesById[id]) {
-      console.log(`Address tool [${id}] <-- ${result}`);
+      //console.log(`Address tool [${id}] <-- ${result}`);
       if (error) {
         _promisesById[id].reject(error);
       } else {
@@ -40,7 +40,7 @@ function create() {
     }
     
     const id = ++_lastMessageId;
-    console.log(`Address tool [${id}] --> ${method}(${args.join(', ')})`);
+    //console.log(`Address tool [${id}] --> ${method}(${args.join(', ')})`);
     const promiseMethods = {};
     const promise = new Promise((resolve, reject) => {
       promiseMethods.resolve = resolve;
