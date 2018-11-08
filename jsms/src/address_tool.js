@@ -7,7 +7,7 @@ function create() {
   let _promisesById = {};
   
   child.on('message', ({id, result, error}) => {
-    if (_promisesById[id]) {
+    if (_promisesById && _promisesById[id]) {
       console.log(`Address tool [${id}] <-- ${result}`);
       if (error) {
         _promisesById[id].reject(error);
@@ -26,13 +26,19 @@ function create() {
       return wrap('address_checksum', [spend, view]);
     },
     destroy: () => {
+      child.disconnect();
       child.kill();
+      _promisesById = null;
     }
   };
   
   return addressTool;
   
   function wrap(method, args) {
+    if (!_promisesById) {
+      return Promise.reject('Address tool closed');
+    }
+    
     const id = ++_lastMessageId;
     console.log(`Address tool [${id}] --> ${method}(${args.join(', ')})`);
     const promiseMethods = {};
