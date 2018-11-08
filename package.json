@@ -1,0 +1,25 @@
+{
+  "name": "migrationutils",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/safex/migrationutils.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/safex/migrationutils/issues"
+  },
+  "homepage": "https://github.com/safex/migrationutils#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-rate-limit": "^2.0.0",
+    "safex-addressjs": "git+https://github.com/safex/safex_addressjs.git",
+    "sync-request": "^6.0.0"
+  }
+}

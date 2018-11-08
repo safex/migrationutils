@@ -1,7 +1,10 @@
 var sa = require('safex-addressjs');
 var request = require('sync-request');
-import RateLimit from 'express-rate-limit';
-import express from 'express';
+const RateLimit = require('express-rate-limit');
+const express = require('express');
+
+const burn_address = "1SAFEXg6ah1JqixuYUnEyKetC4hJhztoz";
+const safex_backend = process.env.SAFEX_BACKEND || 'http://omni.safex.io:3002';
 
 var app = express();
 
@@ -26,9 +29,6 @@ function getInfo() {
             console.log("No connection");
         } else {
             console.log("Connected");
-
-
-            let burn_address = "1SAFEXg6ah1JqixuYUnEyKetC4hJhztoz";
 
             let start_page = 0;
 
@@ -107,7 +107,7 @@ function getInfo() {
             })
             ;
 
-
+          
             book.addresses.forEach((account, account_key) => {
 
 
@@ -151,7 +151,7 @@ function getInfo() {
                             book.addresses[account_key].second_halves.push(second_half)
 
                         } else if (out.scriptPubKey.hex.slice(0, 2) === "6a" && out.scriptPubKey.hex.slice(4, 12) === "6f6d6e69") {
-                            var resp = request('POST', 'http://omni.safex.io:3002/validate_transaction', {
+                            var resp = request('POST', safex_backend + '/validate_transaction', {
                                 json: {txid: txn.txid},
                             });
 
@@ -200,7 +200,7 @@ function getInfo() {
                 for (var i = 0; i < account.first_halves.length; i++) {
 
                     for (var j = 0; j < account.second_halves.length; j++) {
-
+                      
                         let addresses = book.addresses[account_key].safex_addresses;
 
                         if (account.first_halves[i].checksum === account.second_halves[j].checksum) {
@@ -379,7 +379,7 @@ router.post('/:account', ratelimit, (req, res) => {
 
 });
 
-setInterval(getInfo, 300000);
+setInterval(getInfo, 3000);
 
 
 app.use('/api', router);
