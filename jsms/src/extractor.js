@@ -2,8 +2,9 @@ const dns = require('dns');
 const {promisify} = require('util');
 const resolveDns = promisify(dns.resolve);
 
-const sa = require('safex-addressjs');
 const request = require('request-promise-native');
+
+const addressTool = require('./address_tool'); 
 
 const burn_address = '1SAFEXg6ah1JqixuYUnEyKetC4hJhztoz';
 const safex_backend = process.env.SAFEX_BACKEND || 'http://omni.safex.io:3002';
@@ -34,7 +35,7 @@ async function fetchThns() {
   const txns = [];
   
   while (index < endpage) {
-    console.log('fetching more txns');
+    console.log(`fetching txns page ${index} of ${endpage}`);
     
     const page = await request.get('http://bitcoin.safex.io:3001/insight-api/txs/?address=' + burn_address + '&pageNum=' + index, {
       json: true
@@ -172,15 +173,17 @@ async function processAccount(account, apiBook) {
     return a.blockheight - b.blockheight;
   });
   
-  for (var i = 0; i < account.first_halves.length; i++) {
+  const at = addressTool.create();
+  
+  for (let i = 0; i < account.first_halves.length; i++) {
     
-    for (var j = 0; j < account.second_halves.length; j++) {
+    for (let j = 0; j < account.second_halves.length; j++) {
       
       let addresses = account.safex_addresses;
       
       if (account.first_halves[i].checksum === account.second_halves[j].checksum) {
-        const safex_address = sa.pubkeys_to_string(account.first_halves[i].key, account.second_halves[j].key);
-        const newsum = sa.address_checksum(account.first_halves[i].key, account.second_halves[j].key);
+        const safex_address = await at.pubkeys_to_string(account.first_halves[i].key, account.second_halves[j].key);
+        const newsum = await at.address_checksum(account.first_halves[i].key, account.second_halves[j].key);
         if (newsum === account.first_halves[i].checksum && newsum === account.second_halves[j].checksum) {
           let safexaddress = {};
           safexaddress.address = safex_address;
@@ -222,6 +225,8 @@ async function processAccount(account, apiBook) {
       }
     }
   }
+  
+  at.destroy();
   
   console.log(' number of safex addresses ' + account.safex_addresses.length);
   
