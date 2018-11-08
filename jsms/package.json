@@ -32,7 +32,6 @@
     "node-fetch": "^2.2.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
-    "safex-addressjs": "git+https://github.com/safex/safex_addressjs.git",
-    "sync-request": "^6.0.0"
+    "safex-addressjs": "git+https://github.com/safex/safex_addressjs.git"
   }
 }
